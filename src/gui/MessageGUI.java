@@ -10,7 +10,7 @@ import java.io.IOException;
 /**
  * Created by ZiYang on 2015-03-05.
  */
-public class MessageGUI extends JFrame{
+public class MessageGUI extends JFrame implements UsernameLabelCallback{
     private JButton sendButton;
     private JTextArea displayTextArea;
     private JButton exitButton;
@@ -24,19 +24,21 @@ public class MessageGUI extends JFrame{
     private JButton logOffButton;
     private JButton queryButton;
     private JTextField destUsernameTextField;
+    private JLabel usernameLabel;
     private TextAreaOutputSteam outputSteam;
     private Client client;
 
 
     public MessageGUI(Client client){
-        super("Chat GUI");
+        super("Chat App");
         this.client = client;
         setContentPane(rootPanel);
         init();
         pack();
         setSize(1000, 600);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.outputSteam = new TextAreaOutputSteam(displayTextArea);
+        this.usernameLabel.setText("Welcome to Chat App beta. Please Login.");
         setVisible(true);
     }
 
@@ -142,6 +144,17 @@ public class MessageGUI extends JFrame{
 
     public TextAreaOutputSteam getOutputSteam(){
         return outputSteam;
+    }
+
+
+    @Override
+    public void loginUsernameLabel() {
+        this.usernameLabel.setText("Hi, "+client.getLoggedInUsername());
+    }
+
+    @Override
+    public void logoutUsernameLabel() {
+        this.usernameLabel.setText("Welcome to Chat App beta. Please Login.");
     }
 
 }

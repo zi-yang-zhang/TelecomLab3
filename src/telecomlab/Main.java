@@ -11,7 +11,7 @@ public class Main {
         final Client client = new Client("ecse-489.ece.mcgill.ca",5001 );
 
         try {
-            MessageGUI gui = new MessageGUI(client);
+            final MessageGUI gui = new MessageGUI(client);
             System.setOut(new PrintStream(gui.getOutputSteam(), true));
             client.connect();
             Thread receiverThread = new Thread(new Runnable() {
@@ -20,7 +20,7 @@ public class Main {
 
                     while(true){
                         try {
-                            client.receiveMessage();
+                            client.receiveMessage(gui);
 
                         } catch (IOException e) {
                             System.exit(0);
@@ -34,9 +34,14 @@ public class Main {
             receiverThread.start();
             long timeStamp = System.currentTimeMillis();
             while(true){
-                if(System.currentTimeMillis()-timeStamp>1000){
-                    timeStamp = System.currentTimeMillis();
-                    client.queryMessage();
+                try {
+                    if (System.currentTimeMillis() - timeStamp > 1000) {
+                        timeStamp = System.currentTimeMillis();
+                        client.queryMessage();
+                    }
+                }catch (IOException e) {
+                    e.printStackTrace();
+                    System.exit(0);
                 }
             }
 

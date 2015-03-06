@@ -1,11 +1,13 @@
 package telecomlab;
 
+import gui.UsernameLabelCallback;
+
 /**
  * Created by ZiYang on 2015-03-05.
  */
 public class ResponseDecoder {
 
-    public static void decode(Message message){
+    public static void decode(Message message, UsernameLabelCallback callback){
         CommandType type = CommandType.values()[message.getMessageType()-20];
         int subMessageType = message.getSubMessageType();
 
@@ -23,15 +25,18 @@ public class ResponseDecoder {
                 switch (subMessageType){
                     case 0:
                         System.out.println("Login Ok");
+                        callback.loginUsernameLabel();
                         break;
                     case 1:
                         System.out.println("User already logged in");
                         break;
                     case 2:
                         System.out.println("Bad credentials");
+                        callback.logoutUsernameLabel();
                         break;
                     case 3:
                         System.out.println("Badly formatted message");
+                        callback.logoutUsernameLabel();
                         break;
                     default:
                         System.out.println("Unknown SubMessage Type");
@@ -43,12 +48,15 @@ public class ResponseDecoder {
                 switch (subMessageType){
                     case 0:
                         System.out.println("Logoff OK");
+                        callback.logoutUsernameLabel();
                         break;
                     case 1:
                         System.out.println("Not Logged In");
+                        callback.logoutUsernameLabel();
                         break;
                     case 2:
                         System.out.println("Session Expired");
+                        callback.logoutUsernameLabel();
                         break;
                     default:
                         System.out.println("Unknown SubMessage Type");
@@ -141,11 +149,14 @@ public class ResponseDecoder {
 
     }
 
-    private static String formatReceivedMessage(String message){
+    public static String formatReceivedMessage(String message){
         String [] response = message.split(",");
         StringBuilder builder = new StringBuilder();
         builder.append("@"+response[0]+":").append("\n").append(response[2]).append("\n").append(response[1]).append("\n");
         return builder.toString();
 
     }
+
+
+
 }

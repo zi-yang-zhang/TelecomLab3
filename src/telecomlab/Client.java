@@ -1,5 +1,7 @@
 package telecomlab;
 
+import gui.UsernameLabelCallback;
+
 import java.io.*;
 import java.net.Socket;
 
@@ -10,12 +12,16 @@ public class Client {
     private String hostname;
     private int port;
     private Socket socket;
+    private String loggedInUsername;
 
 
     public Client(String hostname, int port){
         this.hostname = hostname;
         this.port = port;
+        this.loggedInUsername="";
     }
+    public void setLoggedInUsername(String username){this.loggedInUsername = username;}
+    public String getLoggedInUsername(){return loggedInUsername;}
 
     public void connect() throws IOException {
         System.out.println("Attempting to connect to "+hostname+":"+port);
@@ -29,11 +35,11 @@ public class Client {
         dataOutputStream.write(command.getRawMessage());
         //System.out.println("Command sent to the server : "+ command.toString());
     }
-    public void receiveMessage() throws IOException {
+    public void receiveMessage(UsernameLabelCallback callback) throws IOException {
         InputStream inputStream = socket.getInputStream();
         DataInputStream dataInputStream = new DataInputStream(inputStream);
         Message response = MessageDecoder.decodeMessage(dataInputStream);
-        ResponseDecoder.decode(response);
+        ResponseDecoder.decode(response,callback);
     }
 
 

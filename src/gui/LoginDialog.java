@@ -55,6 +55,7 @@ public class LoginDialog extends JDialog {
     private void onOK(int type) throws IOException {
         if(type==0){
             client.login(usernameField.getText(),new String (passwordField.getPassword()));
+            client.setLoggedInUsername(usernameField.getText());
         }else{
             client.createUser(usernameField.getText(),new String (passwordField.getPassword()));
         }

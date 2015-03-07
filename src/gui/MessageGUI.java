@@ -25,6 +25,7 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
     private JButton queryButton;
     private JTextField destUsernameTextField;
     private JLabel usernameLabel;
+    private JButton connectToServerButton;
     private TextAreaOutputSteam outputSteam;
     private Client client;
 
@@ -43,6 +44,19 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
     }
 
     public void init(){
+        disConnected();
+        connectToServerButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                try {
+                    client.connect();
+                    connected();
+                } catch (IOException e1) {
+                    disConnected();
+                    e1.printStackTrace();
+                }
+            }
+        });
         loginButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -123,6 +137,8 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
             public void actionPerformed(ActionEvent e) {
                 try {
                     client.sendMessage(destUsernameTextField.getText(),messageTextField.getText());
+                    destUsernameTextField.setText("");
+                    messageTextField.setText("");
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
@@ -133,13 +149,65 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
             public void actionPerformed(ActionEvent e) {
                 try {
                     client.close();
-                    System.exit(0);
+                    disConnected();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
             }
         });
 
+    }
+
+    public void connected(){
+        loginButton.setVisible(true);
+        logOffButton.setVisible(true);
+        createStoreButton.setVisible(true);
+        createUserButton.setVisible(true);
+        deleteUserButton.setVisible(true);
+        exitButton.setVisible(true);
+        queryButton.setVisible(true);
+        echoButton.setVisible(true);
+        sendButton.setVisible(true);
+        destUsernameTextField.setEditable(true);
+        messageTextField.setEditable(true);
+        startReceiving();
+    }
+    public void disConnected(){
+        loginButton.setVisible(false);
+        logOffButton.setVisible(false);
+        createStoreButton.setVisible(false);
+        createUserButton.setVisible(false);
+        deleteUserButton.setVisible(false);
+        exitButton.setVisible(false);
+        queryButton.setVisible(false);
+        echoButton.setVisible(false);
+        sendButton.setVisible(false);
+        destUsernameTextField.setEditable(false);
+        messageTextField.setEditable(false);
+    }
+
+    public void startReceiving(){
+        final UsernameLabelCallback callback = this;
+        Thread receiverThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long timeStamp = System.currentTimeMillis();
+                while(true){
+                    try {
+                        if (System.currentTimeMillis() - timeStamp > 1000) {
+                            timeStamp = System.currentTimeMillis();
+                            client.queryMessage();
+                        }
+                        client.receiveMessage(callback);
+
+                    } catch (IOException e) {
+                    }
+
+
+                }
+            }
+        });
+        receiverThread.start();
     }
 
     public TextAreaOutputSteam getOutputSteam(){

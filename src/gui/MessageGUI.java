@@ -1,6 +1,7 @@
 package gui;
 
 import telecomlab.Client;
+import telecomlab.ReceiverAndPollingThread;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -28,7 +29,8 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
     private JButton connectToServerButton;
     private TextAreaOutputSteam outputSteam;
     private Client client;
-
+    private Thread receiverThread;
+    private ReceiverAndPollingThread receiverAndPollingThread;
 
     public MessageGUI(Client client){
         super("Chat App");
@@ -84,12 +86,6 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
-            }
-        });
-        exitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-
             }
         });
         createStoreButton.addActionListener(new ActionListener() {
@@ -150,7 +146,10 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
                 try {
                     client.close();
                     disConnected();
+                    stopReceiving();
                 } catch (IOException e1) {
+                    e1.printStackTrace();
+                } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
             }
@@ -170,6 +169,7 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
         sendButton.setVisible(true);
         destUsernameTextField.setEditable(true);
         messageTextField.setEditable(true);
+        connectToServerButton.setVisible(false);
         startReceiving();
     }
     public void disConnected(){
@@ -184,30 +184,19 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
         sendButton.setVisible(false);
         destUsernameTextField.setEditable(false);
         messageTextField.setEditable(false);
+        connectToServerButton.setVisible(true);
     }
 
     public void startReceiving(){
-        final UsernameLabelCallback callback = this;
-        Thread receiverThread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                long timeStamp = System.currentTimeMillis();
-                while(true){
-                    try {
-                        if (System.currentTimeMillis() - timeStamp > 1000) {
-                            timeStamp = System.currentTimeMillis();
-                            client.queryMessage();
-                        }
-                        client.receiveMessage(callback);
-
-                    } catch (IOException e) {
-                    }
-
-
-                }
-            }
-        });
+        receiverAndPollingThread = new ReceiverAndPollingThread(client,this);
+        receiverThread = new Thread(receiverAndPollingThread);
         receiverThread.start();
+    }
+    public void stopReceiving() throws InterruptedException {
+        if (receiverThread != null) {
+            receiverAndPollingThread.terminate();
+            receiverThread.join();
+        }
     }
 
     public TextAreaOutputSteam getOutputSteam(){

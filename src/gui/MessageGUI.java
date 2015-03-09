@@ -1,40 +1,44 @@
 package gui;
 
 import telecomlab.Client;
-import telecomlab.ReceiverAndPollingThread;
+import telecomlab.Message;
+import telecomlab.PollingWorker;
+import telecomlab.ReceiverWorker;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by ZiYang on 2015-03-05.
  */
-public class MessageGUI extends JFrame implements UsernameLabelCallback{
+public class MessageGUI extends JFrame implements ResponseListener{
     private JButton sendButton;
     private JTextArea displayTextArea;
     private JButton exitButton;
     private JTextField messageTextField;
     private JPanel rootPanel;
     private JButton loginButton;
-    private JButton createStoreButton;
     private JButton createUserButton;
     private JButton deleteUserButton;
-    private JButton echoButton;
     private JButton logOffButton;
-    private JButton queryButton;
     private JTextField destUsernameTextField;
     private JLabel usernameLabel;
     private JButton connectToServerButton;
+    private JComboBox servers;
     private TextAreaOutputSteam outputSteam;
     private Client client;
-    private Thread receiverThread;
-    private ReceiverAndPollingThread receiverAndPollingThread;
+    private ReceiverWorker receiver;
+    private PollingWorker poller;
 
-    public MessageGUI(Client client){
+    public MessageGUI(){
         super("Chat App");
-        this.client = client;
+        client = new Client();
+        client.registerListener(this);
         setContentPane(rootPanel);
         init();
         pack();
@@ -42,7 +46,7 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
         this.outputSteam = new TextAreaOutputSteam(displayTextArea);
         this.usernameLabel.setText("Welcome to Chat App beta. Please Login.");
-        setVisible(true);
+        System.setOut(new PrintStream(getOutputSteam(), true));
     }
 
     public void init(){
@@ -51,6 +55,7 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
+                    client.setServer(getServerFromComboBox().get(0), Integer.valueOf(getServerFromComboBox().get(1)));
                     client.connect();
                     connected();
                 } catch (IOException e1) {
@@ -63,7 +68,7 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
             @Override
             public void actionPerformed(ActionEvent e) {
                 LoginDialog dialog = new LoginDialog(client,0);
-                dialog.setName("Log in");
+                dialog.setTitle("Log in");
                 dialog.pack();
                 dialog.setVisible(true);
             }
@@ -73,29 +78,9 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
             @Override
             public void actionPerformed(ActionEvent e) {
                 LoginDialog dialog = new LoginDialog(client,1);
-                dialog.setName("Create User");
+                dialog.setTitle("Create User");
                 dialog.pack();
                 dialog.setVisible(true);
-            }
-        });
-        echoButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    client.echo();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        });
-        createStoreButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    client.createStore();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
             }
         });
         logOffButton.addActionListener(new ActionListener() {
@@ -113,16 +98,6 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
             public void actionPerformed(ActionEvent e) {
                 try {
                     client.deleteUser();
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }
-        });
-        queryButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    client.queryMessage();
                 } catch (IOException e1) {
                     e1.printStackTrace();
                 }
@@ -146,10 +121,10 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
                 try {
                     client.close();
                     disConnected();
-                    stopReceiving();
+                    onLoggedOut();
+                    receiver.terminate();
+                    receiver.cancel(true);
                 } catch (IOException e1) {
-                    e1.printStackTrace();
-                } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
             }
@@ -160,58 +135,88 @@ public class MessageGUI extends JFrame implements UsernameLabelCallback{
     public void connected(){
         loginButton.setVisible(true);
         logOffButton.setVisible(true);
-        createStoreButton.setVisible(true);
         createUserButton.setVisible(true);
         deleteUserButton.setVisible(true);
         exitButton.setVisible(true);
-        queryButton.setVisible(true);
-        echoButton.setVisible(true);
         sendButton.setVisible(true);
         destUsernameTextField.setEditable(true);
         messageTextField.setEditable(true);
         connectToServerButton.setVisible(false);
-        startReceiving();
+        receiver = new ReceiverWorker(client);
+
+        receiver.execute();
+
+
     }
     public void disConnected(){
         loginButton.setVisible(false);
         logOffButton.setVisible(false);
-        createStoreButton.setVisible(false);
         createUserButton.setVisible(false);
         deleteUserButton.setVisible(false);
         exitButton.setVisible(false);
-        queryButton.setVisible(false);
-        echoButton.setVisible(false);
         sendButton.setVisible(false);
         destUsernameTextField.setEditable(false);
         messageTextField.setEditable(false);
         connectToServerButton.setVisible(true);
+
+
     }
 
-    public void startReceiving(){
-        receiverAndPollingThread = new ReceiverAndPollingThread(client,this);
-        receiverThread = new Thread(receiverAndPollingThread);
-        receiverThread.start();
-    }
-    public void stopReceiving() throws InterruptedException {
-        if (receiverThread != null) {
-            receiverAndPollingThread.terminate();
-            receiverThread.join();
-        }
-    }
 
     public TextAreaOutputSteam getOutputSteam(){
         return outputSteam;
     }
 
+    public static void main(String[] args){
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                MessageGUI app = new MessageGUI();
+                app.setVisible(true);
+            }
+        });
+    }
+
 
     @Override
-    public void loginUsernameLabel() {
+    public void onReceiveMessage(Message message) {
+
+    }
+
+    @Override
+    public void onUserCreated() {
+        try {
+            client.login(client.getCredentials().get(0),client.getCredentials().get(1));
+            client.createStore();
+            client.logoff();
+            System.setOut(new PrintStream(getOutputSteam(), true));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    @Override
+    public void onLoggedIn() {
         this.usernameLabel.setText("Hi, "+client.getLoggedInUsername());
+        poller = new PollingWorker(client);
+        poller.execute();
+
     }
 
     @Override
-    public void logoutUsernameLabel() {
+    public void onLoggedOut() {
         this.usernameLabel.setText("Welcome to Chat App beta. Please Login.");
+        poller.terminate();
+        poller.cancel(true);
+
     }
 
+    private List<String> getServerFromComboBox(){
+        LinkedList<String> server = new LinkedList<>();
+        for(String name:((String)this.servers.getSelectedItem()).split(":")){
+            server.add(name);
+        }
+        return server;
+    }
 }

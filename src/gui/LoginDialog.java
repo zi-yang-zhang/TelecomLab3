@@ -54,10 +54,12 @@ public class LoginDialog extends JDialog {
 
     private void onOK(int type) throws IOException {
         if(type==0){
+            validator(usernameField.getText());
             client.login(usernameField.getText(),new String (passwordField.getPassword()));
             client.setLoggedInUsername(usernameField.getText());
         }else{
-            client.createUser(usernameField.getText(),new String (passwordField.getPassword()));
+            client.createUser(usernameField.getText(), new String(passwordField.getPassword()));
+            client.setCredentials(usernameField.getText(),new String(passwordField.getPassword()));
         }
 // add your code here
         dispose();
@@ -66,6 +68,15 @@ public class LoginDialog extends JDialog {
     private void onCancel() {
 // add your code here if necessary
         dispose();
+    }
+    private void validator(String username){
+        if(username.contains(",")){
+            JOptionPane.showMessageDialog(this,
+                    "WARNING.",
+                    "Warning",
+                    JOptionPane.WARNING_MESSAGE);
+        }
+
     }
 
 }

@@ -1,9 +1,11 @@
 package telecomlab;
 
-import gui.UsernameLabelCallback;
+import gui.ResponseListener;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Created by ZiYang on 2015-03-04.
@@ -12,13 +14,39 @@ public class Client {
     private String hostname;
     private int port;
     private Socket socket;
-    private String loggedInUsername;
+    private String loggedInUsername="";
+    private ResponseListener listener;
+    private List<String> credentials = new LinkedList<>();
+
+    public List<String> getCredentials() {
+        return this.credentials;
+    }
+
+    public void setCredentials(String username,String pw) {
+        this.credentials.add(0,username);
+        this.credentials.add(1,pw);
+    }
 
 
+
+
+
+    public Client(){
+    }
+    public void setServer(String hostname, int port){
+        this.hostname = hostname;
+        this.port = port;
+    }
     public Client(String hostname, int port){
         this.hostname = hostname;
         this.port = port;
         this.loggedInUsername="";
+        this.credentials = new LinkedList<>();
+    }
+
+    public void registerListener(ResponseListener listener){
+        this.listener = listener;
+
     }
     public void setLoggedInUsername(String username){this.loggedInUsername = username;}
     public String getLoggedInUsername(){return loggedInUsername;}
@@ -35,11 +63,12 @@ public class Client {
         dataOutputStream.write(command.getRawMessage());
         //System.out.println("Command sent to the server : "+ command.toString());
     }
-    public void receiveMessage(UsernameLabelCallback callback) throws IOException {
+    public void receiveMessage() throws IOException {
         InputStream inputStream = socket.getInputStream();
         DataInputStream dataInputStream = new DataInputStream(inputStream);
         Message response = MessageDecoder.decodeMessage(dataInputStream);
-        ResponseDecoder.decode(response,callback);
+        //System.out.println("Command sent to the server : "+ response.toString());
+        ResponseDecoder.decode(response, listener);
     }
 
 

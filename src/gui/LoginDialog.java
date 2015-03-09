@@ -36,7 +36,6 @@ public class LoginDialog extends JDialog {
             }
         });
 
-// call onCancel() when cross is clicked
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
             public void windowClosing(WindowEvent e) {
@@ -44,7 +43,6 @@ public class LoginDialog extends JDialog {
             }
         });
 
-// call onCancel() on ESCAPE
         contentPane.registerKeyboardAction(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 onCancel();
@@ -53,29 +51,32 @@ public class LoginDialog extends JDialog {
     }
 
     private void onOK(int type) throws IOException {
-        if(type==0){
-            validator(usernameField.getText());
-            client.login(usernameField.getText(),new String (passwordField.getPassword()));
-            client.setLoggedInUsername(usernameField.getText());
-        }else{
-            client.createUser(usernameField.getText(), new String(passwordField.getPassword()));
-            client.setCredentials(usernameField.getText(),new String(passwordField.getPassword()));
+        if(validator(usernameField.getText())){
+
+            if(type==0){
+                client.login(usernameField.getText(),new String (passwordField.getPassword()));
+                client.setLoggedInUsername(usernameField.getText());
+            }else{
+                client.createUser(usernameField.getText(), new String(passwordField.getPassword()));
+                client.setCredentials(usernameField.getText(),new String(passwordField.getPassword()));
+            }
         }
-// add your code here
+
         dispose();
     }
 
     private void onCancel() {
-// add your code here if necessary
         dispose();
     }
-    private void validator(String username){
+    private boolean validator(String username){
         if(username.contains(",")){
             JOptionPane.showMessageDialog(this,
+                    "Invalid Username!",
                     "WARNING.",
-                    "Warning",
                     JOptionPane.WARNING_MESSAGE);
+            return false;
         }
+        return true;
 
     }
 

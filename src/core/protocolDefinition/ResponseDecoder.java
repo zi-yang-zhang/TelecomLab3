@@ -1,4 +1,4 @@
-package telecomlab;
+package core.protocolDefinition;
 
 import gui.ResponseListener;
 

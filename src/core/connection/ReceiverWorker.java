@@ -1,4 +1,4 @@
-package telecomlab;
+package core.connection;
 
 import javax.swing.*;
 import java.io.IOException;

@@ -1,4 +1,4 @@
-package telecomlab;
+package core.protocolDefinition;
 
 import java.io.DataInputStream;
 import java.io.IOException;

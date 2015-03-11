@@ -1,6 +1,6 @@
 package gui;
 
-import telecomlab.Message;
+import core.protocolDefinition.Message;
 
 /**
  * Created by ZiYang on 2015-03-09.

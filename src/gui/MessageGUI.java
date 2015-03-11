@@ -1,9 +1,9 @@
 package gui;
 
-import telecomlab.Client;
-import telecomlab.Message;
-import telecomlab.PollingWorker;
-import telecomlab.ReceiverWorker;
+import core.connection.Client;
+import core.connection.PollingWorker;
+import core.connection.ReceiverWorker;
+import core.protocolDefinition.Message;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -30,7 +30,7 @@ public class MessageGUI extends JFrame implements ResponseListener{
     private JLabel usernameLabel;
     private JButton connectToServerButton;
     private JComboBox servers;
-    private TextAreaOutputSteam outputSteam;
+    private TextAreaOutputStream outputSteam;
     private Client client;
     private ReceiverWorker receiver;
     private PollingWorker poller;
@@ -44,7 +44,7 @@ public class MessageGUI extends JFrame implements ResponseListener{
         pack();
         setSize(1000, 600);
         setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-        this.outputSteam = new TextAreaOutputSteam(displayTextArea);
+        this.outputSteam = new TextAreaOutputStream(displayTextArea);
         this.usernameLabel.setText("Welcome to Chat App beta. Please Login.");
         System.setOut(new PrintStream(getOutputSteam(), true));
     }
@@ -163,7 +163,7 @@ public class MessageGUI extends JFrame implements ResponseListener{
     }
 
 
-    public TextAreaOutputSteam getOutputSteam(){
+    public TextAreaOutputStream getOutputSteam(){
         return outputSteam;
     }
 

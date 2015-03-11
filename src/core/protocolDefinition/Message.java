@@ -1,4 +1,4 @@
-package telecomlab;
+package core.protocolDefinition;
 
 /**
  * Created by ZiYang on 2015-03-03.

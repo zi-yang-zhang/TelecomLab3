@@ -1,5 +1,6 @@
-package telecomlab;
+package core.connection;
 
+import core.protocolDefinition.*;
 import gui.ResponseListener;
 
 import java.io.*;
@@ -73,7 +74,7 @@ public class Client {
 
 
     public void echo() throws IOException {
-        Message command  =  MessageEncoder.encodeMessage(CommandType.Echo,new byte[1]);
+        Message command  =  MessageEncoder.encodeMessage(CommandType.Echo, new byte[1]);
         sendCommand(command);
     }
 

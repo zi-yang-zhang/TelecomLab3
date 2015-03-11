@@ -1,6 +1,6 @@
 package gui;
 
-import telecomlab.Client;
+import core.connection.Client;
 
 import javax.swing.*;
 import java.awt.event.*;

@@ -7,9 +7,9 @@ import java.io.OutputStream;
 /**
  * Created by ZiYang on 2015-03-05.
  */
-public class TextAreaOutputSteam extends OutputStream {
+public class TextAreaOutputStream extends OutputStream {
     private JTextArea textArea;
-    public TextAreaOutputSteam(JTextArea textArea){
+    public TextAreaOutputStream(JTextArea textArea){
         this.textArea = textArea;
     }
     @Override

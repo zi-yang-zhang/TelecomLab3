@@ -30,6 +30,8 @@ public class MessageGUI extends JFrame implements ResponseListener{
     private JLabel usernameLabel;
     private JButton connectToServerButton;
     private JComboBox servers;
+    private JLabel toUsernameLabel;
+    private JLabel messageLabel;
     private TextAreaOutputStream outputSteam;
     private Client client;
     private ReceiverWorker receiver;
@@ -119,6 +121,7 @@ public class MessageGUI extends JFrame implements ResponseListener{
             @Override
             public void actionPerformed(ActionEvent e) {
                 try {
+                    client.logoff();
                     client.close();
                     disConnected();
                     onLoggedOut();
@@ -135,13 +138,20 @@ public class MessageGUI extends JFrame implements ResponseListener{
     public void connected(){
         loginButton.setVisible(true);
         logOffButton.setVisible(true);
+        logOffButton.setEnabled(false);
         createUserButton.setVisible(true);
         deleteUserButton.setVisible(true);
+        deleteUserButton.setEnabled(false);
         exitButton.setVisible(true);
         sendButton.setVisible(true);
-        destUsernameTextField.setEditable(true);
-        messageTextField.setEditable(true);
+        sendButton.setEnabled(false);
+        destUsernameTextField.setEditable(false);
+        messageTextField.setEditable(false);
+        destUsernameTextField.setVisible(true);
+        messageTextField.setVisible(true);
         connectToServerButton.setVisible(false);
+        toUsernameLabel.setVisible(true);
+        messageLabel.setVisible(true);
         receiver = new ReceiverWorker(client);
 
         receiver.execute();
@@ -155,9 +165,11 @@ public class MessageGUI extends JFrame implements ResponseListener{
         deleteUserButton.setVisible(false);
         exitButton.setVisible(false);
         sendButton.setVisible(false);
-        destUsernameTextField.setEditable(false);
-        messageTextField.setEditable(false);
+        destUsernameTextField.setVisible(false);
+        messageTextField.setVisible(false);
         connectToServerButton.setVisible(true);
+        toUsernameLabel.setVisible(false);
+        messageLabel.setVisible(false);
 
 
     }
@@ -198,7 +210,14 @@ public class MessageGUI extends JFrame implements ResponseListener{
 
     @Override
     public void onLoggedIn() {
-        this.usernameLabel.setText("Hi, "+client.getLoggedInUsername());
+        this.usernameLabel.setText("Hi, " + client.getLoggedInUsername());
+        loginButton.setEnabled(false);
+        logOffButton.setEnabled(true);
+        createUserButton.setEnabled(false);
+        deleteUserButton.setEnabled(true);
+        sendButton.setEnabled(true);
+        destUsernameTextField.setEditable(true);
+        messageTextField.setEditable(true);
         poller = new PollingWorker(client);
         poller.execute();
 
@@ -207,6 +226,13 @@ public class MessageGUI extends JFrame implements ResponseListener{
     @Override
     public void onLoggedOut() {
         this.usernameLabel.setText("Welcome to Chat App beta. Please Login.");
+        loginButton.setEnabled(true);
+        logOffButton.setEnabled(false);
+        createUserButton.setEnabled(true);
+        deleteUserButton.setEnabled(false);
+        sendButton.setEnabled(false);
+        destUsernameTextField.setEditable(false);
+        messageTextField.setEditable(false);
         poller.terminate();
         poller.cancel(true);
 

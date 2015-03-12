@@ -60,9 +60,13 @@ public class LoginDialog extends JDialog {
                 client.createUser(usernameField.getText(), new String(passwordField.getPassword()));
                 client.setCredentials(usernameField.getText(),new String(passwordField.getPassword()));
             }
+            dispose();
+        }else{
+            usernameField.setText("");
+            passwordField.setText("");
         }
 
-        dispose();
+
     }
 
     private void onCancel() {
